@@ -22,7 +22,6 @@ class PublishData(object):
         self.host = get_host()
         self.port = ""
 
-
     def parking_lot(self):
         """车场信息"""
         url = self.host + '/v2/service/iot/publish?sdk=2'
@@ -60,8 +59,8 @@ class PublishData(object):
             try:
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
-
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("请求失败,错误码：", r.status_code)
             except Exception:
@@ -107,6 +106,7 @@ class PublishData(object):
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("创建失败,错误码：", r.status_code)
             except Exception:
@@ -168,6 +168,7 @@ class PublishData(object):
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("创建失败,错误码：", r.status_code)
             except Exception:
@@ -183,12 +184,12 @@ class PublishData(object):
         gate_id_lists = EX.get_key_values(self.path_parking, "out_parking", "gate_id")
         event_id_lists = EX.get_key_values(self.path_parking, "out_parking", "event_id")
         car_no_lists = EX.get_key_values(self.path_parking, "out_parking", "car_no")
-        car_type_lists = EX.get_key_values(self.path_parking, "out_parking", "car_type")
         out_photo_lists = EX.get_key_values(self.path_parking, "out_parking", "out_photo")
         out_time_lists = EX.get_key_values(self.path_parking, "out_parking", "out_time")
         parking_time_lists = EX.get_key_values(self.path_parking, "out_parking", "parking_time")
         open_mode_lists = EX.get_key_values(self.path_parking, "out_parking", "open_mode")
         ic_card_info_lists = EX.get_key_values(self.path_parking, "out_parking", "ic_card_info")
+        pay_type_lists = EX.get_key_values(self.path_parking, "out_parking", "pay_type")
         ys_money_lists = EX.get_key_values(self.path_parking, "out_parking", "ys_money")
         ss_money_lists = EX.get_key_values(self.path_parking, "out_parking", "ss_money")
         open_note_lists = EX.get_key_values(self.path_parking, "out_parking", "open_note")
@@ -209,12 +210,12 @@ class PublishData(object):
                     "event_id":event_id_lists[i],
                     "gate_id":gate_id_lists[i],
                     "car_no":car_no_lists[i],
-                    "car_type":car_type_lists[i],
                     "out_photo":out_photo_lists[i],
                     "out_time":out_time_lists[i],
                     "parking_time":parking_time_lists[i],
                     "open_mode":open_mode_lists[i],
                     "ic_card_info":ic_card_info_lists[i],
+                    "pay_type":pay_type_lists[i],
                     "ys_money": ys_money_lists[i],
                     "ss_money": ss_money_lists[i],
                     "open_note": open_note_lists[i],
@@ -229,6 +230,7 @@ class PublishData(object):
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("创建失败,错误码：", r.status_code)
             except Exception:
@@ -280,6 +282,7 @@ class PublishData(object):
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("创建失败,错误码：", r.status_code)
             except Exception:
@@ -332,6 +335,7 @@ class PublishData(object):
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("创建失败,错误码：", r.status_code)
             except Exception:
@@ -369,23 +373,47 @@ class PublishData(object):
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("数据发送成功！")
+                    print(r.text)
                 else:
                     print("创建失败,错误码：", r.status_code)
             except Exception:
                 print('traceback.format_exc():\n%s' % traceback.format_exc())
                 raise
 
+    def add_parking(self):
+        """新增车场接入"""
+        url = self.host + '/v2/parks/parkinglots/a8fe7e9d3003b4897df776e73e409c0a/save'
+        print(url)
+        body = {
+            "gate_product_id": "1607d2b8635a00011607d2b8635a1a01",   # 道闸产品id
+            "gate_product_name": "道闸",                             # 道闸产品名称
+            "id": "B_0066",                                          # 停车场ID(全平台唯一)
+            "theam":"建研中心E区停车场",
+            "create_date": "2019-01-05 19:39"               # 登记日期
+        }
+        print(body)
+        try:
+            r = requests.post(url=url, json=body, headers=self.headers)
+            if (r.status_code == 200):
+                print("数据发送成功！")
+                print(r.text)
+            else:
+                print("创建失败,错误码：", r.status_code)
+        except Exception:
+            print('traceback.format_exc():\n%s' % traceback.format_exc())
+            raise
+
 
 if __name__ == '__main__':
     pd = PublishData()
     # pd.parking_lot()            # 车场信息
     # pd.barrier_gate("1607d2b8635a00011607d2b8635a1a01")           # 道闸
-    # pd.car_info()               # 车辆信息
-    # pd.charge_data()            # 收费数据
-    # pd.in_parking()             # 进场记录
-    # pd.out_parking()            # 出场记录
+    pd.car_info()               # 车辆信息
+    pd.charge_data()            # 收费数据
+    pd.in_parking()             # 进场记录
+    pd.out_parking()            # 出场记录
     # pd.abnormal_open_info("1607d2b8635a00011607d2b8635a1a01")     # 异常开闸记录
-
+    # pd.add_parking()             #新增车场接入
 
 
 

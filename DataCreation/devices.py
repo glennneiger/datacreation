@@ -18,7 +18,7 @@ class Devices(object):
         self.path_login = find_path() + '/data' + "/login.xlsx"
         self.path_product = find_path() + '/data' + "/products.xlsx"
         self.device_info = EX.load_data(self.path_device,"设备注册")
-        self.pid_lists = EX.load_data_by_column(self.path_product,"自动导出产品信息")
+        self.pid_lists = EX.load_data_by_column(self.path_product,"自动导出产品信息","pid")
         # self.pid_lists = EX.load_data_by_column(self.path_product, "Sheet2")
         self.token = EX.get_key_value(self.path_login, get_login_sheet_name(), "access_token")
         self.headers = {"Content-Type": "application/json", "Access-Token": self.token}

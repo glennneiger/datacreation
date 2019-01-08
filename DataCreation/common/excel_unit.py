@@ -46,16 +46,21 @@ def load_product_data(file_path, sheet):
     return lists
 
 
-def load_data_by_column(file_path, sheet):
+def load_data_by_column(file_path, sheet, name):
     wb = openpyxl.load_workbook(file_path)
     ws = wb[sheet]
     lists = []
-    for j in range(2, ws.max_row + 1):
-        value = ws.cell(row=j, column=2).value
-        if value is None:
-            value = ''
-        lists.append(value)
-    return lists
+    for i in range(1, ws.max_column+1):
+        if ws.cell(row=1, column=i).value == name:
+            for j in range(2, ws.max_row + 1):
+                value = ws.cell(row=j, column=i).value
+                if value is None:
+                    value = ''
+                lists.append(value)
+            return lists
+    else:
+        print("找不到:"+ name)
+        return None
 
 
 def load_data_by_row_and_col(file_path, sheet, col_len, row_len=1):
@@ -238,9 +243,11 @@ def get_key_values(file_path, sheet_name, key):
 
 if __name__ == '__main__':
     # path = find_path() + '/data' + "/login.xlsx"
-    path = find_path() + '/data' + "/products.xlsx"
+    # path = find_path() + '/data' + "/products.xlsx"
     # path = find_path() + '/data' + "/devices.xlsx"
     # path = find_path() + '/data' + "/parking.xlsx"
+    path = find_path() + '/data' + "/projects.xlsx"
     # print(row_length(path, "Sheet1"))
-    # print(get_key_values(path, "parking_lot","in_park_mount"))
+    print(load_data_by_column(path, "项目信息","项目类型"))
+
 
