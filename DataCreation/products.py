@@ -158,7 +158,7 @@ class Product(object):
 
 if __name__ == '__main__':
     pd = Product()
-    pd.create_products()
+    # pd.create_products()
     # pd.delete_product()
     # pd.query_products()
 

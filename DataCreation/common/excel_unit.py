@@ -95,6 +95,22 @@ def write_product_data(file_path, sheet, lists):
         print("保存失败,错误信息：%s" %msg)
 
 
+def write_project_data(file_path, sheet, lists):
+    try:
+        wb = openpyxl.load_workbook(file_path)
+        ws = wb[sheet]
+        print(len(lists))
+        j = 0
+        for i in range(2,len(lists)+2):
+            ws.cell(row=i, column=1).value = lists[j]["pj_name"]
+            ws.cell(row=i, column=2).value = lists[j]["pj_id"]
+            j = j +1
+            wb.save(file_path)
+        print("保存成功")
+    except Exception as msg:
+        print("保存失败,错误信息：%s" %msg)
+
+
 def clear_product_data(file_path, sheet):
     try:
         wb = openpyxl.load_workbook(file_path)

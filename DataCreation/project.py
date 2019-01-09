@@ -90,6 +90,7 @@ class Projects(object):
     def __init__(self):
         self.path_login = find_path() + '/data' + "/login.xlsx"
         self.path_project = find_path() + '/data' + "/projects.xlsx"
+        self.path_prd = find_path() + '/data' + "/products.xlsx"
         self.token = EX.get_key_value(self.path_login, get_login_sheet_name(), "access_token")
         self.headers = {"Content-Type": "application/json", "Access-Token": self.token}
         self.host = get_host()
@@ -129,6 +130,7 @@ class Projects(object):
         organization_ids = self.query_organization_id()
         project_name_lists = EX.load_data_by_column(self.path_project, "项目信息", "项目名称")
         project_type_lists = EX.load_data_by_column(self.path_project, "项目信息", "项目类型")
+        pj_lists = []
         p_type = 0
         for i in range(len(project_name_lists)):
             if project_type_lists[i] == "长租公寓":
@@ -155,19 +157,48 @@ class Projects(object):
                 'organization_id': organization_ids[0]
             }
             print(body)
+            pj_dict = {"pj_name": "", "pj_id": ""}
             try:
                 r = requests.post(url=url, json=body, headers=self.headers)
                 if (r.status_code == 200):
                     print("创建项目成功")
                     res = eval(r.text)
                     print(res)
+                    pj_dict['pj_id'] = res['data']
+                    pj_dict['pj_name'] = project_name_lists[i]
+                    pj_lists.append(pj_dict)
                 else:
                     print("创建项目失败：", r.status_code)
             except Exception:
                 print('traceback.format_exc():\n%s' % traceback.format_exc())
                 raise
+        if len(pj_lists):
+            EX.write_project_data(self.path_project, "自动导出项目信息", pj_lists)
 
-    def query_devices(self):
+    def add_products_authorize(self):
+        """添加产品授权"""
+        project_id_lists = EX.load_data_by_column(self.path_project, "自动导出项目信息","pj_id")
+        for i in range(len(project_id_lists)):
+            url = self.host + '/v2/realty-master-data/authorizations/projects/' + project_id_lists[i] + '/products'
+            product_id_lists = EX.load_data_by_column(self.path_prd, "自动导出产品信息","pid")
+            print(product_id_lists)
+            for j in range(len(product_id_lists)):
+                data = {
+                        "product_add_ids": [product_id_lists[j]]
+                        }
+                # 查询设备列表
+                try:
+                    r = requests.post(url=url, json=data, headers=self.headers)
+                    if (r.status_code == 200):
+                        print("产品授权成功")
+                    else:
+                        print("产品授权失败：", r.status_code)
+
+                except Exception:
+                    print('traceback.format_exc():\n%s' % traceback.format_exc())
+                    raise
+
+    def query_devices(self, pid):
         '''
         查询设备
         :return: 设备id
@@ -177,7 +208,7 @@ class Projects(object):
         data = {"filter": ["id", "mac", "is_active", "active_date", "is_online", "sn", "last_login"],
                 "order": {},
                 "query": {},
-                "limit": 500,
+                "limit": 200,
                 "offset": 0
                 }
         # 查询设备列表
@@ -197,61 +228,54 @@ class Projects(object):
             raise
         return devices_id
 
-    def add_devices_to_project(self):
-        '''
-        删除设备
-        :return:
-        '''
-        devices_id = self.query_devices()
+    def add_devices_to_project(self, num):
+        """关联设备到项目"""
+        # project_id_lists = ["项目1","项目2","项目3"]
+        # product_id_lists = ["产品1","产品2","产品3"]
+        # devices = [["设备11", "设备12", "设备13", "设备14", "设备15", "设备16", "设备17", "设备18", "设备19", "设备110", "设备111", ],
+        #            ["设备21", "设备22", "设备23", "设备24", "设备25", "设备26", "设备27", "设备28", "设备29", "设备210", "设备211", ],
+        #            ["设备31", "设备32", "设备33", "设备34", "设备35", "设备36", "设备37", "设备38", "设备39", "设备310", "设备311", ]
+        #            ]
+        project_id_lists = EX.load_data_by_column(self.path_project, "自动导出项目信息", "pj_id")
+        product_id_lists = EX.load_data_by_column(self.path_prd, "自动导出产品信息", "pid")
+        counter = 0
+        temp = 0
+        for i in range(len(project_id_lists)):
 
-        url = self.host + self.port + '/v2/realty-master-data/authorizations/projects/'+ prj_id +'/products/' + pid +'/devices'
-        print(url)
+            for j in range(len(product_id_lists)):
+                devices_id = self.query_devices(product_id_lists[j])
+                # devices_id = devices[j]
+                print(devices_id)
+                url = self.host + '/v2/realty-master-data/authorizations/projects/'+ project_id_lists[i] +'/products/' + product_id_lists[j] +'/devices'
+                print(url)
+                counter = counter + temp
+                if (len(devices_id)-counter) < num:
+                    num = (len(devices_id)-counter)
 
-        num = list_num[i_num]
-        print(num)
-        for i in range(0,10):
-            # print(devices_id[num])
-            # num = num +1
-            data = {
-                "device_ids":[devices_id[num]]
-            }
-            try:
-                r = requests.post(url=url,json=data, headers=self.headers)
-                if (r.status_code == 200):
-                    print("设备id%s,关联成功" %devices_id[i])
-                    # print(r.text)
-                    num = num +1
-                    # print("num=",num)
-                else:
-                    print("关联失败：", r.status_code)
+                for k in range(0, num):
+                    data = {
+                        "device_ids": [devices_id[counter + k]]
+                    }
+                    print(data)
+                    try:
+                        r = requests.post(url=url, json=data, headers=self.headers)
+                        if (r.status_code == 200):
+                            print("设备id%s,关联成功" % devices_id[counter])
+                        else:
+                            print("关联失败：", r.status_code)
+                    except Exception:
+                        print('traceback.format_exc():\n%s' % traceback.format_exc())
+                        raise
+            counter += num
 
-            except Exception:
-                print('traceback.format_exc():\n%s' % traceback.format_exc())
-                raise
 
 
 
 if __name__ == '__main__':
     p = Projects()
-    # p.query_organization_id()
-    p.create_projects()
+    # p.query_organization_id()   # 查询组织ID
+    # p.create_projects()         # 创建项目
+    # p.add_products_authorize()  # 产品授权
+    p.add_devices_to_project(4)   # 关联设备到项目
 
-
-    # add_devices_to_project()   # 关联设备到项目，需要先手动进行产品授权
-
-    # for j in range(len(list_pj_id)):
-    #     print(list_pj_id[j])
-    #     prj_id = list_pj_id[j]
-    #
-    #     for k in range(len(list_pid)):
-    #
-    #         # if i_num > len(list_num):
-    #         #     continue
-    #         # print("对产品赋值",list_pid[k])
-    #         # print(list_num[i_num])
-    #         pid = list_pid[k]
-    #         print(pid)
-    #         add_devices_to_project()
-    #
-    #     i_num = i_num +1
 

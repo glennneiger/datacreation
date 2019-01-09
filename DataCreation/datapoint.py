@@ -112,9 +112,9 @@ class Datapoint(object):
             ids.append(res[i]['id'])
         return ids
 
-    def delete_all_data_point(self, list,pid):
+    def delete_all_data_point(self, list, pid):
         '''
-        删除所有数据端点
+        删除数据端点
         :return:
         '''
 
@@ -140,7 +140,7 @@ class Datapoint(object):
 
 if __name__ == '__main__':
     dpt = Datapoint()
-    dpt.add_data_points()
+    dpt.add_data_points()  #添加数据端点
 
     # 删除数据端点
     # rest = dpt.get_all_data_points()
